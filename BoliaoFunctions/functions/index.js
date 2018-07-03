@@ -13,34 +13,43 @@ admin.initializeApp();
 
 exports.sendNotification = functions.database.ref('/notifications/{groupId}/{notificationId}/userList/{userId}').onCreate((data, context) => {
 	const groupId = context.params.groupId;
+	const userId = context.params.userId;
+
+	const groupNameQuery = admin.database().ref('/groups/' + groupId + '/names').once('value');
+	return groupNameQuery.then(groupResult => {
+		const groupName = groupResult.val();
+
+		const deviceToken = admin.database().ref('/users/'+ userId + '/devicetoken').once('value');
+		return deviceToken.then(result => {
+			const tokenId = result.val();
+
+			const payload = {
+				notification: {
+					title: "BoLiao",
+					body: "Details for " + groupName + " have been updated",
+					icon: "default"
+				}
+			};
+		
+			return admin.messaging().sendToDevice(tokenId, payload).then(response => {
+				return console.log('Attempt to send notification');
+			});
+		});
+	});
+});
+
+exports.deleteNotification = functions.database.ref('/notifications/{groupId}/{notificationId}/userList/{userId}').onCreate((data, context) => {
+	const groupId = context.params.groupId;
 	const notificationId  = context.params.notificationId;
 	const userId = context.params.userId;
 
-	console.log('Group ID: ', groupId);
-	console.log('Notification ID: ', notificationId);
-	console.log('User ID:', userId);
-
-	// to prevent notification deletion from pushing notification
-	// if (!event.data.val()) {
-	// 	return console.log('Notification deleted', notificationId);
-	// }
-
-	const deviceToken = admin.database().ref('/users/'+ userId + '/devicetoken').once('value');
-
-	return deviceToken.then(result => {
-		const tokenId = result.val();
-		console.log('Device Token:', tokenId);
-
-		const payload = {
-			notification: {
-				title: "BoLiao",
-				body: "Event has been updated",
-				icon: "default"
-			}
-		};
-	
-		return admin.messaging().sendToDevice(tokenId, payload).then(response => {
-			return console.log('Attempt to send notification');
-		});
+	var notifRef = admin.database().ref('/notifications/' + groupId + '/' + notificationId + '/userList/' + userId);
+	notifRef.remove().then(function() {
+		return console.log('Remove succeeded');
+	})
+	.catch(function(error) {
+		return console.log('Remove failed');
 	});
+
+	return 0;
 });
