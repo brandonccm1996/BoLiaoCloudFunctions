@@ -11,7 +11,7 @@ admin.initializeApp();
 //  response.send("Hello from Firebase!");
 // });
 
-exports.sendNotification = functions.database.ref('/notifications/{groupId}/{notificationId}/userList/{userId}').onCreate((data, context) => {
+exports.sendEditNotification = functions.database.ref('/editEventNotif/{groupId}/{notificationId}/{userId}').onCreate((data, context) => {
 	const groupId = context.params.groupId;
 	const userId = context.params.userId;
 
@@ -38,12 +38,51 @@ exports.sendNotification = functions.database.ref('/notifications/{groupId}/{not
 	});
 });
 
-exports.deleteNotification = functions.database.ref('/notifications/{groupId}/{notificationId}/userList/{userId}').onCreate((data, context) => {
+exports.deleteEditNotification = functions.database.ref('/editEventNotif/{groupId}/{notificationId}/{userId}').onCreate((data, context) => {
 	const groupId = context.params.groupId;
 	const notificationId  = context.params.notificationId;
 	const userId = context.params.userId;
 
-	var notifRef = admin.database().ref('/notifications/' + groupId + '/' + notificationId + '/userList/' + userId);
+	var notifRef = admin.database().ref('/editEventNotif/' + groupId + '/' + notificationId + '/' + userId);
+	notifRef.remove().then(function() {
+		return console.log('Remove succeeded');
+	})
+	.catch(function(error) {
+		return console.log('Remove failed');
+	});
+
+	return 0;
+});
+
+exports.sendDeleteNotification = functions.database.ref('/deleteEventNotif/{groupId}/{groupName}/{notificationId}/{userId}').onCreate((data, context) => {
+	const userId = context.params.userId;
+	const groupName = context.params.groupName;
+
+	const deviceToken = admin.database().ref('/users/'+ userId + '/devicetoken').once('value');
+	return deviceToken.then(result => {
+		const tokenId = result.val();
+
+		const payload = {
+			notification: {
+				title: "BoLiao",
+				body:  groupName + " has been deleted by organiser",
+				icon: "default"
+			}
+		};
+		
+		return admin.messaging().sendToDevice(tokenId, payload).then(response => {
+			return console.log('Attempt to send notification');
+		});
+	});
+});
+
+exports.deleteDeleteNotification = functions.database.ref('/deleteEventNotif/{groupId}/{groupName}/{notificationId}/{userId}').onCreate((data, context) => {
+	const groupId = context.params.groupId;
+	const notificationId  = context.params.notificationId;
+	const userId = context.params.userId;
+	const groupName = context.params.groupName;
+
+	var notifRef = admin.database().ref('/deleteEventNotif/' + groupId + '/' + groupName + '/' + notificationId + '/' + userId);
 	notifRef.remove().then(function() {
 		return console.log('Remove succeeded');
 	})
