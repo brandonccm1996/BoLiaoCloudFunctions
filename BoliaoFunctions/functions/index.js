@@ -92,3 +92,9 @@ exports.deleteDeleteNotification = functions.database.ref('/deleteEventNotif/{gr
 
 	return 0;
 });
+
+exports.detectTimeChange = functions.database.ref('groups/{groupId}/{startDateTime}').onUpdate((data, context) => {
+	const groupId = context.params.groupId;
+	console.log(groupId, 'Time change detected');
+	return 0;
+});
