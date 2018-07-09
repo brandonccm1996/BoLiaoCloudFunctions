@@ -93,8 +93,34 @@ exports.deleteDeleteNotification = functions.database.ref('/deleteEventNotif/{gr
 	return 0;
 });
 
-exports.detectTimeChange = functions.database.ref('groups/{groupId}/{startDateTime}').onUpdate((data, context) => {
+exports.detectTimeChange = functions.database.ref('groups/{groupId}/{startDateTime}').onUpdate((change, context) => {
 	const groupId = context.params.groupId;
-	console.log(groupId, 'Time change detected');
-	return 0;
+	const updatedDateTime = change.after.val().toString();
+
+	const payload = {
+		data: {
+			title: "Time Change Detected",
+			body:  updatedDateTime,
+		}
+	};
+
+	const userListsRef = admin.database().ref('userlists/' + groupId);
+	return userListsRef.once('value').then(snapshot => {
+		var reads = [];
+
+		snapshot.forEach((childSnapshot) => {	
+			console.log("Key", childSnapshot.key);
+			const deviceToken = admin.database().ref('/users/'+ childSnapshot.key + '/devicetoken').once('value');
+			
+			var promise = deviceToken.then(result => {
+				const tokenId = result.val();
+				return admin.messaging().sendToDevice(tokenId, payload).then(response => {
+					return console.log('Attempt to send notification');
+				});
+			});
+
+			reads.push(promise);
+		});
+		return Promise.all(reads);
+	});
 });
