@@ -93,14 +93,14 @@ exports.deleteDeleteNotification = functions.database.ref('/deleteEventNotif/{gr
 	return 0;
 });
 
-exports.detectTimeChange = functions.database.ref('groups/{groupId}/{startDateTime}').onUpdate((change, context) => {
+exports.detectTimeChange = functions.database.ref('groups/{groupId}/startDateTime').onUpdate((change, context) => {
 	const groupId = context.params.groupId;
 	const updatedDateTime = change.after.val().toString();
 
 	const payload = {
 		data: {
-			title: "Time Change Detected",
-			body:  updatedDateTime,
+			groupId: groupId,
+			newDateTime:  updatedDateTime,
 		}
 	};
 
