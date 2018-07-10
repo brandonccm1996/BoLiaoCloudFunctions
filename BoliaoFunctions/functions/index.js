@@ -32,7 +32,7 @@ exports.sendEditNotification = functions.database.ref('/editEventNotif/{groupId}
 			};
 		
 			return admin.messaging().sendToDevice(tokenId, payload).then(response => {
-				return console.log('Attempt to send notification');
+				return console.log('Attempt to send edit notification');
 			});
 		});
 	});
@@ -71,7 +71,7 @@ exports.sendDeleteNotification = functions.database.ref('/deleteEventNotif/{grou
 		};
 		
 		return admin.messaging().sendToDevice(tokenId, payload).then(response => {
-			return console.log('Attempt to send notification');
+			return console.log('Attempt to send delete notification');
 		});
 	});
 });
@@ -93,12 +93,13 @@ exports.deleteDeleteNotification = functions.database.ref('/deleteEventNotif/{gr
 	return 0;
 });
 
-exports.detectTimeChange = functions.database.ref('groups/{groupId}/startDateTime').onUpdate((change, context) => {
+exports.detectStartTimeChange = functions.database.ref('groups/{groupId}/startDateTime').onUpdate((change, context) => {
 	const groupId = context.params.groupId;
 	const updatedDateTime = change.after.val().toString();
 
 	const payload = {
 		data: {
+			title: "Start Time Change Detected",
 			groupId: groupId,
 			newDateTime:  updatedDateTime,
 		}
@@ -115,7 +116,40 @@ exports.detectTimeChange = functions.database.ref('groups/{groupId}/startDateTim
 			var promise = deviceToken.then(result => {
 				const tokenId = result.val();
 				return admin.messaging().sendToDevice(tokenId, payload).then(response => {
-					return console.log('Attempt to send notification');
+					return console.log('Attempt to send start time change notification');
+				});
+			});
+
+			reads.push(promise);
+		});
+		return Promise.all(reads);
+	});
+});
+
+exports.detectNameChange = functions.database.ref('groups/{groupId}/names').onUpdate((change, context) => {
+	const groupId = context.params.groupId;
+	const updatedName = change.after.val().toString();
+
+	const payload = {
+		data: {
+			title: "Name Change Detected",
+			groupId: groupId,
+			newName: updatedName,
+		}
+	};
+
+	const userListsRef = admin.database().ref('userlists/' + groupId);
+	return userListsRef.once('value').then(snapshot => {
+		var reads = [];
+
+		snapshot.forEach((childSnapshot) => {	
+			console.log("Key", childSnapshot.key);
+			const deviceToken = admin.database().ref('/users/'+ childSnapshot.key + '/devicetoken').once('value');
+			
+			var promise = deviceToken.then(result => {
+				const tokenId = result.val();
+				return admin.messaging().sendToDevice(tokenId, payload).then(response => {
+					return console.log('Attempt to send name change notification');
 				});
 			});
 
