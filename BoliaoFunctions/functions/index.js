@@ -54,6 +54,49 @@ exports.deleteEditNotification = functions.database.ref('/editEventNotif/{groupI
 	return 0;
 });
 
+exports.sendRemoveNotification = functions.database.ref('/removeNotif/{groupId}/{notificationId}/{userId}').onCreate((data, context) => {
+	const groupId = context.params.groupId;
+	const userId = context.params.userId;
+
+	const groupNameQuery = admin.database().ref('/groups/' + groupId + '/names').once('value');
+	return groupNameQuery.then(groupResult => {
+		const groupName = groupResult.val();
+
+		const deviceToken = admin.database().ref('/users/'+ userId + '/devicetoken').once('value');
+		return deviceToken.then(result => {
+			const tokenId = result.val();
+
+			const payload = {
+				notification: {
+					title: "BoLiao",
+					body: "You have been removed from " + groupName + " by the organiser",
+					icon: "default"
+				}
+			};
+		
+			return admin.messaging().sendToDevice(tokenId, payload).then(response => {
+				return console.log('Attempt to send remove notification');
+			});
+		});
+	});
+});
+
+exports.deleteRemoveNotification = functions.database.ref('/removeNotif/{groupId}/{notificationId}/{userId}').onCreate((data, context) => {
+	const groupId = context.params.groupId;
+	const notificationId  = context.params.notificationId;
+	const userId = context.params.userId;
+
+	var notifRef = admin.database().ref('/removeNotif/' + groupId + '/' + notificationId + '/' + userId);
+	notifRef.remove().then(function() {
+		return console.log('Remove succeeded');
+	})
+	.catch(function(error) {
+		return console.log('Remove failed');
+	});
+
+	return 0;
+});
+
 exports.sendDeleteNotification = functions.database.ref('/deleteEventNotif/{groupId}/{groupName}/{notificationId}/{userId}').onCreate((data, context) => {
 	const userId = context.params.userId;
 	const groupName = context.params.groupName;
