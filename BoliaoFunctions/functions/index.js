@@ -86,6 +86,10 @@ exports.deleteRemoveNotification = functions.database.ref('/removeNotif/{groupId
 	const notificationId  = context.params.notificationId;
 	const userId = context.params.userId;
 
+	console.log('Removing', groupId);
+	console.log('Removing', notificationId);
+	console.log('Removing', userId);
+
 	var notifRef = admin.database().ref('/removeNotif/' + groupId + '/' + notificationId + '/' + userId);
 	notifRef.remove().then(function() {
 		return console.log('Remove succeeded');

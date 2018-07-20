@@ -99,3 +99,21 @@
     at Object.onceWrapper (events.js:313:30)
 [error] 
 [error] Error: An unexpected error has occurred.
+[debug] [2018-07-17T19:45:23.091Z] ----------------------------------------------------------------------
+[debug] [2018-07-17T19:45:23.095Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Brandon\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase deploy
+[debug] [2018-07-17T19:45:23.095Z] CLI Version:   3.19.3
+[debug] [2018-07-17T19:45:23.095Z] Platform:      win32
+[debug] [2018-07-17T19:45:23.095Z] Node Version:  v8.11.2
+[debug] [2018-07-17T19:45:23.098Z] Time:          Wed Jul 18 2018 03:45:23 GMT+0800 (Malay Peninsula Standard Time)
+[debug] [2018-07-17T19:45:23.098Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-07-17T19:45:23.118Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-07-17T19:45:23.118Z] > authorizing via signed-in user
+[debug] [2018-07-17T19:45:23.121Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/boliao-c8063  
+  
+ Wed Jul 18 2018 03:45:23 GMT+0800 (Malay Peninsula Standard Time)
+[debug] [2018-07-17T19:45:23.208Z] Error: getaddrinfo ENOTFOUND admin.firebase.com admin.firebase.com:443
+    at errnoException (dns.js:50:10)
+    at GetAddrInfoReqWrap.onlookup [as oncomplete] (dns.js:92:26)
+[error] 
+[error] Error: Server Error. getaddrinfo ENOTFOUND admin.firebase.com admin.firebase.com:443
