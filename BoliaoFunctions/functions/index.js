@@ -14,27 +14,30 @@ admin.initializeApp();
 exports.sendEditNotification = functions.database.ref('/editEventNotif/{groupId}/{notificationId}/{userId}').onCreate((data, context) => {
 	const groupId = context.params.groupId;
 	const userId = context.params.userId;
+	const getDeviceTokensPromise = admin.database().ref('/users/' + userId + '/devicetokens').once('value');
+	const getGroupNamePromise = admin.database().ref('/groups/' + groupId + '/names').once('value');
+  	let tokensSnapshot;
+	let tokens;
+	
+	return Promise.all([getDeviceTokensPromise, getGroupNamePromise]).then(results => {
+		tokensSnapshot = results[0];
+		const groupName = results[1].val();
 
-	const groupNameQuery = admin.database().ref('/groups/' + groupId + '/names').once('value');
-	return groupNameQuery.then(groupResult => {
-		const groupName = groupResult.val();
+		if (!tokensSnapshot.hasChildren()) {
+			return console.log('There are no notification tokens to send to.');
+		}
+		console.log('There are', tokensSnapshot.numChildren(), 'tokens to send notifications to.');
 
-		const deviceToken = admin.database().ref('/users/'+ userId + '/devicetoken').once('value');
-		return deviceToken.then(result => {
-			const tokenId = result.val();
+		const payload = {
+			notification: {
+				title: "BoLiao",
+				body: "Details for " + groupName + " have been updated",
+				icon: "default"
+			}
+		};
 
-			const payload = {
-				notification: {
-					title: "BoLiao",
-					body: "Details for " + groupName + " have been updated",
-					icon: "default"
-				}
-			};
-		
-			return admin.messaging().sendToDevice(tokenId, payload).then(response => {
-				return console.log('Attempt to send edit notification');
-			});
-		});
+		tokens = Object.keys(tokensSnapshot.val());
+		return admin.messaging().sendToDevice(tokens, payload);
 	});
 });
 
@@ -57,27 +60,30 @@ exports.deleteEditNotification = functions.database.ref('/editEventNotif/{groupI
 exports.sendRemoveNotification = functions.database.ref('/removeNotif/{groupId}/{notificationId}/{userId}').onCreate((data, context) => {
 	const groupId = context.params.groupId;
 	const userId = context.params.userId;
+	const getDeviceTokensPromise = admin.database().ref('/users/' + userId + '/devicetokens').once('value');
+	const getGroupNamePromise = admin.database().ref('/groups/' + groupId + '/names').once('value');
+  	let tokensSnapshot;
+	let tokens;
+	
+	return Promise.all([getDeviceTokensPromise, getGroupNamePromise]).then(results => {
+		tokensSnapshot = results[0];
+		const groupName = results[1].val();
 
-	const groupNameQuery = admin.database().ref('/groups/' + groupId + '/names').once('value');
-	return groupNameQuery.then(groupResult => {
-		const groupName = groupResult.val();
+		if (!tokensSnapshot.hasChildren()) {
+			return console.log('There are no notification tokens to send to.');
+		}
+		console.log('There are', tokensSnapshot.numChildren(), 'tokens to send notifications to.');
 
-		const deviceToken = admin.database().ref('/users/'+ userId + '/devicetoken').once('value');
-		return deviceToken.then(result => {
-			const tokenId = result.val();
+		const payload = {
+			notification: {
+				title: "BoLiao",
+				body: "Admin for " + groupName + " has removed you from the activity",
+				icon: "default"
+			}
+		};
 
-			const payload = {
-				notification: {
-					title: "BoLiao",
-					body: "You have been removed from " + groupName + " by the organiser",
-					icon: "default"
-				}
-			};
-		
-			return admin.messaging().sendToDevice(tokenId, payload).then(response => {
-				return console.log('Attempt to send remove notification');
-			});
-		});
+		tokens = Object.keys(tokensSnapshot.val());
+		return admin.messaging().sendToDevice(tokens, payload);
 	});
 });
 
@@ -85,10 +91,6 @@ exports.deleteRemoveNotification = functions.database.ref('/removeNotif/{groupId
 	const groupId = context.params.groupId;
 	const notificationId  = context.params.notificationId;
 	const userId = context.params.userId;
-
-	console.log('Removing', groupId);
-	console.log('Removing', notificationId);
-	console.log('Removing', userId);
 
 	var notifRef = admin.database().ref('/removeNotif/' + groupId + '/' + notificationId + '/' + userId);
 	notifRef.remove().then(function() {
@@ -104,10 +106,17 @@ exports.deleteRemoveNotification = functions.database.ref('/removeNotif/{groupId
 exports.sendDeleteNotification = functions.database.ref('/deleteEventNotif/{groupId}/{groupName}/{notificationId}/{userId}').onCreate((data, context) => {
 	const userId = context.params.userId;
 	const groupName = context.params.groupName;
+	const getDeviceTokensPromise = admin.database().ref('/users/' + userId + '/devicetokens').once('value');
+  	let tokensSnapshot;
+	let tokens;
+	
+	return getDeviceTokensPromise.then(results => {
+		tokensSnapshot = results;
 
-	const deviceToken = admin.database().ref('/users/'+ userId + '/devicetoken').once('value');
-	return deviceToken.then(result => {
-		const tokenId = result.val();
+		if (!tokensSnapshot.hasChildren()) {
+			return console.log('There are no notification tokens to send to.');
+		}
+		console.log('There are', tokensSnapshot.numChildren(), 'tokens to send notifications to.');
 
 		const payload = {
 			notification: {
@@ -116,10 +125,9 @@ exports.sendDeleteNotification = functions.database.ref('/deleteEventNotif/{grou
 				icon: "default"
 			}
 		};
-		
-		return admin.messaging().sendToDevice(tokenId, payload).then(response => {
-			return console.log('Attempt to send delete notification');
-		});
+
+		tokens = Object.keys(tokensSnapshot.val());
+		return admin.messaging().sendToDevice(tokens, payload);
 	});
 });
 
