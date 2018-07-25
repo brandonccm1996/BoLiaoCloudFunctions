@@ -166,13 +166,20 @@ exports.detectStartTimeChange = functions.database.ref('groups/{groupId}/startDa
 
 		snapshot.forEach((childSnapshot) => {	
 			console.log("Key", childSnapshot.key);
-			const deviceToken = admin.database().ref('/users/'+ childSnapshot.key + '/devicetoken').once('value');
-			
-			var promise = deviceToken.then(result => {
-				const tokenId = result.val();
-				return admin.messaging().sendToDevice(tokenId, payload).then(response => {
-					return console.log('Attempt to send start time change notification');
-				});
+			const getDeviceTokensPromise = admin.database().ref('/users/'+ childSnapshot.key + '/devicetokens').once('value');
+			let tokensSnapshot;
+			let tokens;
+
+			var promise = getDeviceTokensPromise.then(results => {
+				tokensSnapshot = results;
+
+				if (!tokensSnapshot.hasChildren()) {
+					return console.log('There are no notification tokens to send to.');
+				}
+				console.log('There are', tokensSnapshot.numChildren(), 'tokens to send notifications to.');
+
+				tokens = Object.keys(tokensSnapshot.val());
+				return admin.messaging().sendToDevice(tokens, payload);
 			});
 
 			reads.push(promise);
@@ -199,13 +206,20 @@ exports.detectNameChange = functions.database.ref('groups/{groupId}/names').onUp
 
 		snapshot.forEach((childSnapshot) => {	
 			console.log("Key", childSnapshot.key);
-			const deviceToken = admin.database().ref('/users/'+ childSnapshot.key + '/devicetoken').once('value');
+			const getDeviceTokensPromise = admin.database().ref('/users/'+ childSnapshot.key + '/devicetokens').once('value');
+			let tokensSnapshot;
+			let tokens;
 			
-			var promise = deviceToken.then(result => {
-				const tokenId = result.val();
-				return admin.messaging().sendToDevice(tokenId, payload).then(response => {
-					return console.log('Attempt to send name change notification');
-				});
+			var promise = getDeviceTokensPromise.then(results => {
+				tokensSnapshot = results;
+
+				if (!tokensSnapshot.hasChildren()) {
+					return console.log('There are no notification tokens to send to.');
+				}
+				console.log('There are', tokensSnapshot.numChildren(), 'tokens to send notifications to.');
+
+				tokens = Object.keys(tokensSnapshot.val());
+				return admin.messaging().sendToDevice(tokens, payload);
 			});
 
 			reads.push(promise);
