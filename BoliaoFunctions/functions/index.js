@@ -148,6 +148,49 @@ exports.deleteDeleteNotification = functions.database.ref('/deleteEventNotif/{gr
 	return 0;
 });
 
+exports.detectDelete = functions.database.ref('/detectDelete/{groupId}/{notificationId}/{userId}').onCreate((data, context) => {
+	const userId = context.params.userId;
+	const groupId = context.params.groupId;
+	const getDeviceTokensPromise = admin.database().ref('/users/' + userId + '/devicetokens').once('value');
+  	let tokensSnapshot;
+	let tokens;
+	
+	return getDeviceTokensPromise.then(results => {
+		tokensSnapshot = results;
+
+		if (!tokensSnapshot.hasChildren()) {
+			return console.log('There are no notification tokens to send to.');
+		}
+		console.log('There are', tokensSnapshot.numChildren(), 'tokens to send notifications to.');
+
+		const payload = {
+			data: {
+				title: "Delete Detected",
+				groupId: groupId
+			}
+		};
+
+		tokens = Object.keys(tokensSnapshot.val());
+		return admin.messaging().sendToDevice(tokens, payload);
+	});
+});
+
+exports.deleteDetectDelete = functions.database.ref('/detectDelete/{groupId}/{notificationId}/{userId}').onCreate((data, context) => {
+	const groupId = context.params.groupId;
+	const notificationId  = context.params.notificationId;
+	const userId = context.params.userId;
+
+	var notifRef = admin.database().ref('/detectDelete/' + groupId + '/' + notificationId + '/' + userId);
+	notifRef.remove().then(function() {
+		return console.log('Remove succeeded');
+	})
+	.catch(function(error) {
+		return console.log('Remove failed');
+	});
+
+	return 0;
+});
+
 exports.detectStartTimeChange = functions.database.ref('groups/{groupId}/startDateTime').onUpdate((change, context) => {
 	const groupId = context.params.groupId;
 	const updatedDateTime = change.after.val().toString();
