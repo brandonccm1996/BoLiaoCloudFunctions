@@ -103,13 +103,13 @@ exports.deleteRemoveNotification = functions.database.ref('/removeNotif/{groupId
 	return 0;
 });
 
-exports.sendDeleteNotification = functions.database.ref('/deleteEventNotif/{groupId}/{groupName}/{notificationId}/{userId}').onCreate((data, context) => {
+exports.detectRemove = functions.database.ref('/detectRemove/{groupId}/{notificationId}/{userId}').onCreate((data, context) => {
 	const userId = context.params.userId;
-	const groupName = context.params.groupName;
+	const groupId = context.params.groupId;
 	const getDeviceTokensPromise = admin.database().ref('/users/' + userId + '/devicetokens').once('value');
   	let tokensSnapshot;
 	let tokens;
-	
+
 	return getDeviceTokensPromise.then(results => {
 		tokensSnapshot = results;
 
@@ -119,25 +119,23 @@ exports.sendDeleteNotification = functions.database.ref('/deleteEventNotif/{grou
 		console.log('There are', tokensSnapshot.numChildren(), 'tokens to send notifications to.');
 
 		const payload = {
-			notification: {
-				title: "BoLiao",
-				body:  groupName + " has been deleted by organiser",
-				icon: "default"
+			data: {
+				title: "Remove Detected",
+				groupId: groupId
 			}
 		};
 
 		tokens = Object.keys(tokensSnapshot.val());
 		return admin.messaging().sendToDevice(tokens, payload);
 	});
-});
+})
 
-exports.deleteDeleteNotification = functions.database.ref('/deleteEventNotif/{groupId}/{groupName}/{notificationId}/{userId}').onCreate((data, context) => {
+exports.deleteDetectRemove = functions.database.ref('/detectRemove/{groupId}/{notificationId}/{userId}').onCreate((data, context) => {
 	const groupId = context.params.groupId;
 	const notificationId  = context.params.notificationId;
 	const userId = context.params.userId;
-	const groupName = context.params.groupName;
 
-	var notifRef = admin.database().ref('/deleteEventNotif/' + groupId + '/' + groupName + '/' + notificationId + '/' + userId);
+	var notifRef = admin.database().ref('/detectRemove/' + groupId + '/' + notificationId + '/' + userId);
 	notifRef.remove().then(function() {
 		return console.log('Remove succeeded');
 	})
