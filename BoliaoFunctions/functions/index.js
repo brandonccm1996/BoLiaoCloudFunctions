@@ -48,10 +48,10 @@ exports.deleteEditNotification = functions.database.ref('/editEventNotif/{groupI
 
 	var notifRef = admin.database().ref('/editEventNotif/' + groupId + '/' + notificationId + '/' + userId);
 	notifRef.remove().then(function() {
-		return console.log('Remove succeeded');
+		return console.log('Deletion of edit notification succeeded');
 	})
 	.catch(function(error) {
-		return console.log('Remove failed');
+		return console.log('Deletion of edit notification failed');
 	});
 
 	return 0;
@@ -94,10 +94,10 @@ exports.deleteRemoveNotification = functions.database.ref('/removeNotif/{groupId
 
 	var notifRef = admin.database().ref('/removeNotif/' + groupId + '/' + notificationId + '/' + userId);
 	notifRef.remove().then(function() {
-		return console.log('Remove succeeded');
+		return console.log('Deletion of remove notification succeeded');
 	})
 	.catch(function(error) {
-		return console.log('Remove failed');
+		return console.log('Deletion of remove notification failed');
 	});
 
 	return 0;
@@ -137,10 +137,10 @@ exports.deleteDetectRemove = functions.database.ref('/detectRemove/{groupId}/{no
 
 	var notifRef = admin.database().ref('/detectRemove/' + groupId + '/' + notificationId + '/' + userId);
 	notifRef.remove().then(function() {
-		return console.log('Remove succeeded');
+		return console.log('Deletion of detectRemove event succeeded');
 	})
 	.catch(function(error) {
-		return console.log('Remove failed');
+		return console.log('Deletion of detectRemove event failed');
 	});
 
 	return 0;
@@ -180,10 +180,10 @@ exports.deleteDetectDelete = functions.database.ref('/detectDelete/{groupId}/{no
 
 	var notifRef = admin.database().ref('/detectDelete/' + groupId + '/' + notificationId + '/' + userId);
 	notifRef.remove().then(function() {
-		return console.log('Remove succeeded');
+		return console.log('Deletion of detectDelete event succeeded');
 	})
 	.catch(function(error) {
-		return console.log('Remove failed');
+		return console.log('Deletion of detectDelete event failed');
 	});
 
 	return 0;
