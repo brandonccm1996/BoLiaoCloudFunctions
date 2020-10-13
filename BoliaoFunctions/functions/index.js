@@ -48,10 +48,10 @@ exports.deleteEditNotification = functions.database.ref('/editEventNotif/{groupI
 
 	var notifRef = admin.database().ref('/editEventNotif/' + groupId + '/' + notificationId + '/' + userId);
 	notifRef.remove().then(function() {
-		return console.log('Remove succeeded');
+		return console.log('Deletion of edit notification succeeded');
 	})
 	.catch(function(error) {
-		return console.log('Remove failed');
+		return console.log('Deletion of edit notification failed');
 	});
 
 	return 0;
@@ -94,10 +94,10 @@ exports.deleteRemoveNotification = functions.database.ref('/removeNotif/{groupId
 
 	var notifRef = admin.database().ref('/removeNotif/' + groupId + '/' + notificationId + '/' + userId);
 	notifRef.remove().then(function() {
-		return console.log('Remove succeeded');
+		return console.log('Deletion of remove notification succeeded');
 	})
 	.catch(function(error) {
-		return console.log('Remove failed');
+		return console.log('Deletion of remove notification failed');
 	});
 
 	return 0;
